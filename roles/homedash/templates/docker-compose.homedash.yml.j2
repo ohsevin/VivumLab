@@ -1,0 +1,23 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  homedash:
+    image: gonzague/homedash:{{ homedash.version }}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "{{ volumes_root }}/homedash:/data"
+    environment:
+      - SALT=ivPWITRH5KPJE5oQQAgxuiCgIxBez6MF6idGmasWTUjZzhEx3iAtnI9TSAo6HAevApRoujC5 #checking
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    labels:
+      - "traefik.http.services.homedash.loadbalancer.server.scheme=http"
+      - "traefik.http.services.homedash.loadbalancer.server.port=4567"
+{% include './labels.j2' %}

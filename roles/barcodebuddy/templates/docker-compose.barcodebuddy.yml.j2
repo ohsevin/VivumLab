@@ -1,0 +1,21 @@
+---
+version: '3'
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  app:
+    image: f0rc3/barcodebuddy-docker:{{ barcodebuddy.version }}
+    restart: unless-stopped
+    environment:
+      - TZ={{ common_timezone }}
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/barcodebuddy/config:/config"
+    labels:
+      - "traefik.http.services.barcodebuddy.loadbalancer.server.scheme=http"
+      - "traefik.http.services.barcodebuddy.loadbalancer.server.port=80"
+{% include './labels.j2' %}

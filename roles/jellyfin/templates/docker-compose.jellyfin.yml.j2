@@ -1,0 +1,23 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  # Media Server
+  jellyfin:
+    image: jellyfin/jellyfin:{{ jellyfin.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/jellyfin/config:/config"
+      - "{{ storage_dir }}:/media"
+      - "{{ storage_dir }}/temp:/cache"
+    labels:
+      - "traefik.http.services.jellyfin.loadbalancer.server.scheme=http"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+{% include './labels.j2' %}

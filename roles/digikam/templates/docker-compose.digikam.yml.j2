@@ -1,0 +1,31 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  digiKam:
+    image: rpufky/digikam:{{ digikam.version }}
+    environment:
+      - USER_ID={{ uid }}
+      - GROUP_ID={{ gid }}
+      - TZ={{ common_timezone }}
+      - KEEP_APP_RUNNING=1
+      - DISPLAY_WIDTH=1920
+      - DISPLAY_HEIGHT=1080
+      - ENABLE_CJK_FONT=0
+      - VNC_PASSWORD="{{lookup('password', './settings/passwords/digikam_vnc_password chars=ascii_letters')}}"
+    volumes:
+      - "{{ volumes_root }}/digikam/config:/config"
+      - "{{ storage_dir }}/Pictures:/data"
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    labels:
+      - "traefik.http.services.digikam.loadbalancer.server.scheme=http"
+      - "traefik.http.services.digikam.loadbalancer.server.port=5800"
+{% include './labels.j2' %}

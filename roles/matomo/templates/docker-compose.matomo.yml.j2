@@ -1,0 +1,41 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  matomo:
+
+services:
+ # Web Analytics
+  app:
+    image: matomo:{{ matomo.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+      - matomo
+    volumes:
+      - "{{ volumes_root }}/matomo/data:/data"
+    environment:
+      - MATOMO_DATABASE_HOST=matomo_db
+      - MATOMO_DATABASE_USERNAME=matomo
+      - MATOMO_DATABASE_PASSWORD={{lookup('password', './settings/passwords/matomo_db_password chars=ascii_letters')}}
+      - MATOMO_DATABASE_DBNAME=matomo
+    labels:
+      - "traefik.http.services.matomo.loadbalancer.server.scheme=http"
+      - "traefik.http.services.matomo.loadbalancer.server.port=80"
+{% include './labels.j2' %}
+
+  matomo_db:
+    image: mariadb:{{ matomo.db_version }}
+    restart: unless-stopped
+    networks:
+      - matomo
+    volumes:
+      - "{{ volumes_root }}/matomo/db:/var/lib/mysql"
+    environment:
+      - MYSQL_ROOT_PASSWORD=matomo
+      - MYSQL_USER=matomo
+      - MYSQL_PASSWORD={{lookup('password', './settings/passwords/matomo_db_password chars=ascii_letters')}}
+      - MYSQL_DATABASE=matomo

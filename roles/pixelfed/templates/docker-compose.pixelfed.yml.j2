@@ -1,0 +1,58 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  pixelfed:
+
+services:
+  pixelfed:
+    image: ethibox/pixelfed
+    restart: unless-stopped
+    networks:
+      - traefik_network
+      - pixelfed
+    labels:
+      - "traefik.http.services.pixelfed.loadbalancer.server.scheme=http"
+      - "traefik.http.services.pixelfed.loadbalancer.server.port=80"
+{% include './labels.j2' %}
+    env_file:
+      - "{{ volumes_root }}/pixelfed/pixelfed.env"
+    volumes:
+      - "{{ volumes_root }}/pixelfed/storage:/var/www/storage"
+
+  worker:  # Comment this whole block if HORIZON_EMBED is true.
+    image: ethibox/pixelfed
+    restart: unless-stopped
+    env_file:
+      - "{{ volumes_root }}/pixelfed/pixelfed.env"
+    volumes:
+      - "{{ volumes_root }}/pixelfed/storage:/var/www/storage"
+    networks:
+      - pixelfed
+    command: gosu www-data php artisan horizon
+
+  db:
+    image: mariadb:{{ pixelfed.db_version }}
+    restart: unless-stopped
+    networks:
+      - pixelfed
+    environment:
+      - MYSQL_DATABASE=pixelfed
+      - MYSQL_USER=pixelfed
+      - MYSQL_PASSWORD={{ lookup('password', './settings/passwords/pixelfed_db_password chars=ascii_letters length=15') }}
+      - MYSQL_RANDOM_ROOT_PASSWORD=true
+    volumes:
+      - "{{ volumes_root }}/pixelfed/mariadb:/var/lib/mysql"
+
+  redis:
+    image: redis:5-alpine
+    restart: unless-stopped
+    volumes:
+      - "{{ volumes_root }}/pixelfed/redis:/data"
+    networks:
+      - pixelfed
+    command: >
+     --requirepass {{ lookup('password', './settings/passwords/pixelfed_redis_password chars=ascii_letters length=15') }}

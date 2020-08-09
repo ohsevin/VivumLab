@@ -1,0 +1,35 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+ # Graphing
+  grafana:
+    image: grafana/grafana:{{ grafana.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/grafana/data/:/var/lib/grafana/"
+      - "{{ volumes_root }}/grafana/dashboards/:/etc/grafana/provisioning/dashboards/"
+      - "{{ volumes_root }}/grafana/datasources/:/etc/grafana/provisioning/datasources/"
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,natel-discrete-panel,petrslavotinek-carpetplot-panel,vonage-status-panel,raintank-worldping-app
+{% if smtp.host %}
+      - GF_SMTP_enable=true
+      - GF_SMTP_HOST={{ smtp.host }}:{{ smtp.port }}
+      - GF_SMTP_USER={{ smtp.user }}
+      - GF_SMTP_PASSWORD={{ smtp.pass }}
+      - GF_SMTP_FROM_ADDRESS={{ smtp.from_email }}
+      - GF_SMTP_FROM_NAME={{ smtp.from_name }}
+{% endif %}
+      - GF_SECURITY_ADMIN_USER={{ default_username }}
+      - GF_SECURITY_ADMIN_PASSWORD="{{ default_password }}"
+    labels:
+      - "traefik.http.services.grafana.loadbalancer.server.scheme=http"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+{% include './labels.j2' %}

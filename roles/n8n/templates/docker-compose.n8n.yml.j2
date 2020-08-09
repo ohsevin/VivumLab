@@ -1,0 +1,24 @@
+---
+version: '3'
+
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  app:
+    image: n8nio/n8n:{{ n8n.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/n8n:/root/.n8n"
+    environment:
+      - GENERIC_TIMEZONE={{common_timezone}}
+      - TZ={{common_timezone}}
+    labels:
+      - "traefik.http.services.n8n.loadbalancer.server.scheme=http"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+{% include './labels.j2' %}

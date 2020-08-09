@@ -1,0 +1,45 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  piwigo:
+
+services:
+  piwigo:
+    restart: unless-stopped
+    domainname: localhost
+    depends_on:
+      - mysqlpiwigo
+    networks:
+      - traefik_network
+      - piwigo
+    image: mathieuruellan/piwigo:{{ piwigo.version }}
+    volumes:
+        - "{{ volumes_root }}/piwigo/config:/config"
+        - "{{ volumes_root }}/piwigo/data/galleries:/var/www/galleries"
+        - "{{ volumes_root }}/piwigo/data/local:/var/www/local"
+        - "{{ volumes_root }}/piwigo/data/plugins:/var/www/plugins"
+        - "{{ volumes_root }}/piwigo/data/themes:/var/www/themes"
+        - "{{ volumes_root }}/piwigo/cache:/var/www/_data/i"
+        - "{{ volumes_root }}/piwigo/upload:/var/www/upload"
+        - "{{ volumes_root }}/piwigo/logs:/var/log/apache2"
+    labels:
+      - "traefik.http.services.piwigo.loadbalancer.server.scheme=http"
+      - "traefik.http.services.piwigo.loadbalancer.server.port=80"
+{% include './labels.j2' %}
+
+  mysqlpiwigo:
+    restart: unless-stopped
+    image: mariadb:{{ piwigo.db_version }}
+    networks:
+      - piwigo
+    volumes:
+      - "{{ volumes_root }}/piwigo/mysql/:/var/lib/mysql"
+    environment:
+      - MYSQL_ROOT_PASSWORD="{{lookup('password', './settings/passwords/piwigo_root_db_password chars=ascii_letters')}}"
+      - MYSQL_DATABASE=piwigo
+      - MYSQL_USER=piwigo
+      - MYSQL_PASSWORD="{{lookup('password', './settings/passwords/piwigo_db_password chars=ascii_letters')}}"

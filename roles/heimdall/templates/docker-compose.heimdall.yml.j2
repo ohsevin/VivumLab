@@ -1,0 +1,26 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  heimdall:
+    image: linuxserver/heimdall:{{ heimdall.version }}
+    restart: unless-stopped
+    environment:
+      - PUID={{ uid_output.stdout }}
+      - PGID={{ gid_output.stdout }}
+      - TZ={{ common_timezone }}
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/heimdall/config:/config"
+    labels:
+      - "traefik.http.services.heimdall.loadbalancer.server.scheme=http"
+      - "traefik.http.services.heimdall.loadbalancer.server.port=80"
+{% include './labels.j2' %}

@@ -1,0 +1,31 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  app:
+    # REQUIRED
+    image: linuxserver/mstream:{{ mstream.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    environment:
+      - PUID={{ uid_output.stdout }}
+      - PGID={{ gid_output.stdout }}
+      - USER={{ default_username }}
+      - PASSWORD= "{{ default_password }}"
+      - USE_JSON=false
+      - TZ={{ common_timezone }}
+    volumes:
+      - "{{ volumes_root }}/mstream/config:/config"
+      - "{{ storage_dir }}/Music:/music"
+    labels:
+      - "traefik.http.services.mstream.loadbalancer.server.scheme=http"
+      - "traefik.http.services.mstream.loadbalancer.server.port=3000"
+{% include './labels.j2' %}

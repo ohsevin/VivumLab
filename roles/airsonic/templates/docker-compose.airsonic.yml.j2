@@ -1,0 +1,28 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  airsonic_web:
+    image: linuxserver/airsonic:{{ airsonic.version }}
+    restart: unless-stopped
+    environment:
+      - PUID={{ uid_output.stdout }}
+      - PGID={{ gid_output.stdout }}
+      - TZ={{ common_timezone }}
+      - JAVA_OPTS=-Dserver.use-forward-headers=true
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/airsonic/config:/config"
+      - "{{ volumes_root }}/airsonic/playlists:/playlists"
+      - "{{ storage_dir }}/Music:/music"
+      - "{{ storage_dir }}/Music/Podcasts:/podcasts"
+    labels:
+      - "traefik.http.services.airsonic.loadbalancer.server.scheme=http"
+      - "traefik.http.services.airsonic.loadbalancer.server.port=4040"
+{% include './labels.j2' %}

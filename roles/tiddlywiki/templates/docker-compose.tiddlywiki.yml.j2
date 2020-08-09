@@ -1,0 +1,21 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  app:
+    image: elasticdog/tiddlywiki:{{ tiddlywiki.version }}
+    restart: unless-stopped
+    command: ./ --listen host=0.0.0.0
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/tiddlywiki:/tiddlywiki"
+    labels:
+      - "traefik.http.services.tiddlywiki.loadbalancer.server.scheme=http"
+      - "traefik.http.services.tiddlywiki.loadbalancer.server.port=8080"
+{% include './labels.j2' %}

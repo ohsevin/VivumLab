@@ -1,0 +1,24 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  app:
+    image: statping/statping:{{ statping.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/statping/data:/app"
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DB_CONN=sqlite
+      - DISABLE_LOGS=true
+    labels:
+      - "traefik.http.services.statping.loadbalancer.server.scheme=http"
+      - "traefik.http.services.statping.loadbalancer.server.port=8080"
+{% include './labels.j2' %}

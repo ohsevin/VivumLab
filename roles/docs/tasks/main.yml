@@ -1,0 +1,55 @@
+---
+- name: Create required directories.
+  file:
+    path: "{{ volumes_root }}/docs/{{ item }}"
+    state: directory
+  loop:
+    - src
+
+- name: Read Tor connection info
+  shell: cat /var/lib/tor/http-onion/hostname
+  register: tor_domain_file
+  when: enable_tor
+
+- name: Read Tor connection info
+  shell: cat /var/lib/tor/ssh-onion/hostname
+  register: tor_ssh_domain_file
+  when: enable_tor
+
+- name: Copy docs into place
+  copy:
+    src: docs
+    dest: "{{ volumes_root }}/docs/src/"
+
+- name: Copy mkdocs.yml into place
+  copy:
+    src: mkdocs.yml
+    dest: "{{ volumes_root }}/docs/mkdocs.yml"
+
+- name: Copy templated files into place
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ volumes_root }}/docs/src/{{ item }}"
+  loop:
+    - docs-nginx.conf
+
+- name: Copy docs docker-compose.yml file into place.
+  template:
+    src: docker-compose.docs.yml.j2
+    dest: "{{ volumes_root }}/docs/docker-compose.yml"
+  vars:
+    tor_domain: "{{ tor_http_domain_file.stdout | default('') }}"
+
+- name: Configure docs systemd service.
+  become: yes
+  template:
+    src: service.j2
+    dest: /etc/systemd/system/docs.service
+
+- name: Start docs
+  systemd:
+    name: docs
+    enabled: yes
+    daemon-reload: yes
+    state: started
+  become: yes

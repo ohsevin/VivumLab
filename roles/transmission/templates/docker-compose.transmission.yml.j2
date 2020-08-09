@@ -1,0 +1,52 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  # Torrent Downloader https://vivumlab.com/software/transmission/
+  transmission:
+    image: haugene/transmission-openvpn:{{ transmission.version }}
+    networks:
+      - traefik_network
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "{{ storage_dir }}/Downloads:/data"
+      - "{{ storage_dir }}/Downloads/watch:/data/watch"
+      - "{{ storage_dir }}/Video/Movies:/movies"
+      - "{{ storage_dir }}/Video/TV:/tv"
+    environment:
+      - OPENVPN_PROVIDER={{ openvpn_provider }}
+      - OPENVPN_USERNAME={{ openvpn_username }}
+      - OPENVPN_PASSWORD={{ openvpn_password }}
+      - OPENVPN_CONFIG={{ openvpn_config }}
+      - OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 300
+      - PGID=0
+      - PUID=0
+      - TZ={{ common_timezone }}
+      #- TRANSMISSION_RPC_AUTHENTICATION_REQUIRED=true
+      #- TRANSMISSION_RPC_PASSWORD="{{ default_password }}"
+      #- TRANSMISSION_RPC_USERNAME={{ default_username }}
+      - TRANSMISSION_SPEED_LIMIT_UP=100
+      - TRANSMISSION_SPEED_LIMIT_UP_enable=true
+      - TRANSMISSION_SPEED_LIMIT_DOWN=100
+      - TRANSMISSION_SPEED_LIMIT_DOWN_enable=true
+      - TRANSMISSION_RATIO_LIMIT=2
+      - TRANSMISSION_RATIO_LIMIT_enable=true
+    labels:
+      - "traefik.http.services.transmission.loadbalancer.server.scheme=http"
+      - "traefik.http.services.transmission.loadbalancer.server.port=9091"
+{% include './labels.j2' %}

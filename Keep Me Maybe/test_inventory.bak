@@ -1,0 +1,5 @@
+[vivumlab]
+vagrant
+
+[bastion]
+bastion_server

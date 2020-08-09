@@ -1,0 +1,27 @@
+---
+version: '3'
+
+services:
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      #- "{{ volumes_root }}/watchtower/config.json:/config.json:rw" # Only needed for Private registries
+    command: --schedule "0 2 * * *" --cleanup --stop-timeout 30s
+    environment:
+      - TZ={{ common_timezone }}
+{% if watchtower.notification %}
+{% if gotify.enable %}
+      - WATCHTOWER_NOTIFICATIONS=gotify
+      - WATCHTOWER_NOTIFICATION_GOTIFY_URL=https://{% if gotify.domain %}{{ gotify.domain }}{% else %}{{ gotify.subdomain + "." + domain }}{% endif %}/
+      - WATCHTOWER_NOTIFICATION_GOTIFY_TOKEN={{ watchtower.gotify_token }}
+{% else %}
+      - WATCHTOWER_NOTIFICATIONS=email
+      - WATCHTOWER_NOTIFICATION_EMAIL_FROM={{  smtp.from_email }}
+      - WATCHTOWER_NOTIFICATION_EMAIL_TO={{ admin_email }}
+      - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER={{ smtp.user }}
+      - WATCHTOWER_NOTIFICATION_EMAIL_SERVER={{ smtp.host }}
+      - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD={{ smtp.pass }}
+      - WATCHTOWER_NOTIFICATION_EMAIL_DELAY=2
+{% endif %}{% endif %}

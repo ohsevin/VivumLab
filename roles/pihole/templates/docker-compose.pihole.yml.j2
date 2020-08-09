@@ -1,0 +1,41 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  # Network level ad blocking
+  pihole:
+    image: pihole/pihole:{{ pihole.version }}
+    restart: unless-stopped
+    hostname: "{% if pihole.domain %}{{ pihole.domain }}{% else %}{{ pihole.subdomain + "." + domain }}{% endif %}"
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    networks:
+      - traefik_network
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - "{{ volumes_root }}/pihole/config/:/etc/pihole/"
+      - "{{ volumes_root }}/pihole/dnsmasq.d/:/etc/dnsmasq.d/"
+    environment:
+      - WEBPASSWORD="{{ default_password }}"
+      - VIRTUAL_HOST={% if pihole.domain %}{{ pihole.domain }}{% else %}{{ pihole.subdomain + "." + domain }}{% endif %}
+      - ServerIP={{ vlab_ip }}
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+    labels:
+      - "traefik.http.services.pihole.loadbalancer.server.scheme=http"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+{% include './labels.j2' %}
+    extra_hosts:
+{% for service in services %}
+      - {{ service }}.{{ domain }}:{{ vlab_ip }}
+{% endfor %}
+
+#Checking

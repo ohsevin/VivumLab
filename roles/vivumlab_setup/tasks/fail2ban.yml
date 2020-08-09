@@ -1,0 +1,48 @@
+---
+### main file for fail2ban
+# Original by Robert De Bock
+# https://github.com/robertdebock/ansible-role-fail2ban
+- name: Configure fail2ban.local
+  ini_file:
+    path: /etc/fail2ban/fail2ban.local
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  loop: "{{ fail2ban_base_configuration + fail2ban_configuration }}"
+  notify:
+    - restart fail2ban
+  loop_control:
+    label: "{{ item.option }}"
+
+- name: configure jail.local
+  ini_file:
+    path: /etc/fail2ban/jail.local
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  loop: "{{ fail2ban_base_jail_configuration + fail2ban_jail_configuration }}"
+  notify:
+    - restart fail2ban
+  loop_control:
+    label: "{{ item.option }}"
+
+- name: Stat auth log file
+  stat:
+    path: /var/log/auth.log
+  register: fail2ban_auth
+
+- name: Touch auth log file
+  file:
+    path: /var/log/auth.log
+    state: touch
+  when:
+    - fail2ban_auth.stat.exists is defined
+    - not fail2ban_auth.stat.exists
+
+- name: Start fail2ban
+  systemd:
+    name: fail2ban
+    enabled: yes
+    daemon_reload: yes
+    state: started
+  become: yes

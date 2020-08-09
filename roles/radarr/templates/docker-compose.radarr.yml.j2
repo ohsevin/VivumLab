@@ -1,0 +1,28 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  # Movie Downloader
+  radarr:
+    image: linuxserver/radarr:{{ radarr.version }}
+    networks:
+      - traefik_network
+    restart: unless-stopped
+    environment:
+      - PUID={{ uid_output.stdout }}
+      - PGID={{ gid_output.stdout }}
+      - TZ={{ common_timezone }}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "{{ volumes_root }}/radarr/config:/config"
+      - "{{ storage_dir }}/Video/Movies:/movies"
+      - "{{ storage_dir }}/Downloads/complete/movies:/downloads"
+    labels:
+      - "traefik.http.services.radarr.loadbalancer.server.scheme=http"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+{% include './labels.j2' %}

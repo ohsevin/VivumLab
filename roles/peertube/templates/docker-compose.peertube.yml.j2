@@ -1,0 +1,61 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  peertube:
+
+services:
+  pt_db:
+    image: postgres:{{ peertube.db_version }}
+    networks:
+      - peertube
+    env_file:
+      - .env
+    volumes:
+      - "{{ volumes_root }}/peertube/db:/var/lib/postgresql/data"
+    restart: unless-stopped
+
+  pt_redis:
+    networks:
+      - peertube
+    image: redis:{{ peertube.redis_version }}
+    volumes:
+      - "{{ volumes_root }}/peertube/redis:/data"
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  pt_postfix:
+    networks:
+      - peertube
+    image: mwader/postfix-relay
+    restart: unless-stopped
+    env_file:
+      - .env
+  app:
+    # REQUIRED
+    image: chocobozzz/peertube:{{ peertube.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+      - peertube
+    volumes:
+      - "{{ volumes_root }}/peertube/data:/data"
+      - "{{ volumes_root }}/peertube/config:/config"
+    depends_on:
+      - pt_db
+      - pt_redis
+      - pt_postfix
+    env_file:
+      - .env
+    ports:
+      - 9000:9000
+    labels:
+      - "traefik.http.services.peertube.loadbalancer.server.scheme=http"
+      - "traefik.http.services.peertube.loadbalancer.server.port=9000"
+{% include './labels.j2' %}

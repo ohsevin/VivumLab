@@ -1,0 +1,30 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  funkwhale:
+    image: funkwhale/all-in-one:{{ funkwhale.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    environment:
+      - PUID={{uid_output.stdout }}
+      - PGID={{gid_output.stdout }}
+      - FUNKWHALE_HOSTNAME={{ service_domain }}
+      - FUNKWHALE_PROTOCOL=https
+      - MEDIA_ROOT=/srv/funkwhale/data/media
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - DJANGO_SECRET_KEY={{lookup('password', './settings/passwords/package_name_db_password chars=ascii_letters length=128')}}
+      - FUNKWHALE_FRONTEND_PATH=/srv/funkwhale/front/dist
+    volumes:
+      - "{{ volumes_root }}/funkwhale:/data"
+      - "{{ storage_dir }}/Music:/music:ro"
+    labels:
+      - "traefik.http.services.funkwhale.loadbalancer.server.scheme=http"
+      - "traefik.http.services.funkwhale.loadbalancer.server.port=80"
+{% include './labels.j2' %}

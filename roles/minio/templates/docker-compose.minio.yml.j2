@@ -1,0 +1,30 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  # S3 Storage for Backups via Restic
+  minio:
+    image: minio/minio:{{ minio.version }}
+    networks:
+      - traefik_network
+    restart: unless-stopped
+    command: server /data
+    volumes:
+      - "{{ storage_dir }}/Backups/minio:/data"
+      - "{{ volumes_root }}/minio/config:/root/.minio/"
+    ports:
+      - 9110:9000
+    environment:
+      MINIO_UID: {{ uid_output.stdout }}
+      MINIO_GID: {{ gid_output.stdout }}
+      MINIO_ACCESS_KEY: {{minio_access_key}}
+      MINIO_SECRET_KEY: {{minio_secret_access_key}}
+    labels:
+      - "traefik.http.services.minio.loadbalancer.server.scheme=http"
+      - "traefik.http.services.minio.loadbalancer.server.port=9000"
+{% include './labels.j2' %}

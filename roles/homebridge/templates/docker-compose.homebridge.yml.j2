@@ -1,0 +1,18 @@
+---
+version: '3'
+
+services:
+  homebridge:
+    image: oznu/homebridge:{{ homebridge.version }}
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TZ={{ common_timezone }}
+      - PUID={{ uid_output.stdout }}
+      - PGID={{ gid_output.stdout }}
+    volumes:
+      - "{{ volumes_root }}/homebridge:/homebridge"
+    labels:
+      - "traefik.http.services.homebridge.loadbalancer.server.scheme=http"
+      - "traefik.http.services.homebridge.loadbalancer.server.port=8123"
+{% include './labels.j2' %}

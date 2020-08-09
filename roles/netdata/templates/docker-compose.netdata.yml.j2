@@ -1,0 +1,28 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  netdata:
+    image: netdata/netdata:{{ netdata.version }}
+    hostname: {{ domain }}
+    networks:
+      - traefik_network
+    environment:
+      - PGID=116
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.http.services.netdata.loadbalancer.server.scheme=http"
+      - "traefik.http.services.netdata.loadbalancer.server.port=19999"
+{% include './labels.j2' %}

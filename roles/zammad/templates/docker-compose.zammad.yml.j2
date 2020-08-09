@@ -1,0 +1,141 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  zammad:
+
+services:
+
+  zammad-backup:
+    command: ["zammad-backup"]
+    depends_on:
+      - zammad-railsserver
+    entrypoint: /usr/local/bin/backup.sh
+    environment:
+      - BACKUP_SLEEP=86400
+      - HOLD_DAYS=10
+      - POSTGRESQL_USER=zammad
+      - "POSTGRESQL_PASSWORD={{lookup('password', './settings/passwords/zammad_db_password')}}"
+    image: zammad/zammad-docker-compose:zammad-postgresql-{{ zammad.version }}
+    links:
+      - zammad-postgresql
+    networks:
+      - zammad
+    restart: unless-stopped
+    volumes:
+      - "{{ volumes_root }}/zammad/zammad-backup:/var/tmp/zammad"
+      - "{{ volumes_root }}/zammad/zammad-data:/opt/zammad"
+
+  zammad-elasticsearch:
+    environment:
+      - discovery.type=single-node
+    image: zammad/zammad-docker-compose:zammad-elasticsearch-{{ zammad.version }}
+    restart: unless-stopped
+    networks:
+      - zammad
+    volumes:
+      - "{{ volumes_root }}/zammad/elasticsearch-data:/usr/share/elasticsearch/data"
+
+  zammad-init:
+    command: ["zammad-init"]
+    depends_on:
+      - zammad-postgresql
+    environment:
+      - POSTGRESQL_USER=zammad
+      - "POSTGRESQL_PASS={{lookup('password', './settings/passwords/zammad_db_password')}}"
+    image: zammad/zammad-docker-compose:zammad-{{ zammad.version }}
+    links:
+      - zammad-elasticsearch
+      - zammad-postgresql
+    networks:
+      - zammad
+    restart: on-failure
+    volumes:
+      - "{{ volumes_root }}/zammad/zammad-data:/opt/zammad"
+
+  zammad-memcached:
+    command: memcached -m 256M
+    image: memcached:{{ zammad.memcached_version }}
+    restart: unless-stopped
+    networks:
+      - zammad
+
+  zammad-nginx:
+    command: ["zammad-nginx"]
+    depends_on:
+      - zammad-railsserver
+    image: zammad/zammad-docker-compose:zammad-{{ zammad.version }}
+    links:
+      - zammad-railsserver
+      - zammad-websocket
+    restart: unless-stopped
+    volumes:
+      - "{{ volumes_root }}/zammad/zammad-data:/opt/zammad"
+    networks:
+      - traefik_network
+      - zammad
+    labels:
+      - "traefik.http.services.zammad.loadbalancer.server.scheme=http"
+      - "traefik.http.services.zammad.loadbalancer.server.port=80"
+{% include './labels.j2' %}
+
+  zammad-postgresql:
+    environment:
+      - POSTGRES_USER=zammad
+      - "POSTGRES_PASSWORD={{lookup('password', './settings/passwords/zammad_db_password')}}"
+    image: zammad/zammad-docker-compose:zammad-postgresql-{{ zammad.version }}
+    restart: unless-stopped
+    networks:
+      - zammad
+    volumes:
+      - "{{ volumes_root }}/zammad/postgresql-data:/var/lib/postgresql/data"
+
+  zammad-railsserver:
+    command: ["zammad-railsserver"]
+    depends_on:
+      - zammad-memcached
+      - zammad-postgresql
+    image: zammad/zammad-docker-compose:zammad-{{ zammad.version }}
+    links:
+      - zammad-elasticsearch
+      - zammad-memcached
+      - zammad-postgresql
+    networks:
+      - zammad
+    restart: unless-stopped
+    volumes:
+      - "{{ volumes_root }}/zammad/zammad-data:/opt/zammad"
+
+  zammad-scheduler:
+    command: ["zammad-scheduler"]
+    depends_on:
+      - zammad-memcached
+      - zammad-railsserver
+    image: zammad/zammad-docker-compose:zammad-{{ zammad.version }}
+    links:
+      - zammad-elasticsearch
+      - zammad-memcached
+      - zammad-postgresql
+    networks:
+      - zammad
+    restart: unless-stopped
+    volumes:
+      - "{{ volumes_root }}/zammad/zammad-data:/opt/zammad"
+
+  zammad-websocket:
+    command: ["zammad-websocket"]
+    depends_on:
+      - zammad-memcached
+      - zammad-railsserver
+    image: zammad/zammad-docker-compose:zammad-{{ zammad.version }}
+    links:
+      - zammad-postgresql
+      - zammad-memcached
+    networks:
+      - zammad
+    restart: unless-stopped
+    volumes:
+      - "{{ volumes_root }}/zammad/zammad-data:/opt/zammad"

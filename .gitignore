@@ -1,0 +1,20 @@
+*.retry
+*.lock
+.vagrant/
+kibitzr.yml
+kibitzr-creds.yml
+inventory
+fetch/
+settings/
+/site
+/.vscode
+.DS_Store
+pkg/
+INSTALL_PRECOMMIT.sh
+# ignore swp files
+*.swp
+idea/
+bootstrap_install/server_credentials
+
+# Node
+node_modules/

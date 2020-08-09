@@ -1,0 +1,27 @@
+---
+version: '2'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  duplicati:
+    networks:
+      - traefik_network
+    image: linuxserver/duplicati:{{ duplicati.version }}
+    restart: unless-stopped
+    container_name: duplicati
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - CLI_ARGS=--webservice-password="{{ default_password }}"
+    volumes:
+      - "{{ volumes_root }}/duplicati/config:/config"
+      - "{{ volumes_root }}/duplicati/backups:/backups"
+      - "{{ volumes_root }}/duplicati/source:/source"
+    labels:
+      - "traefik.http.services.duplicati.loadbalancer.server.scheme=http"
+      - "traefik.http.services.duplicati.loadbalancer.server.port=8200"
+{% include './labels.j2' %}

@@ -1,0 +1,58 @@
+#jinja2: trim_blocks:False
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  shinobi:
+
+services:
+  shinobi_app:
+    image: migoller/shinobidocker:{{ shinobi.version }}
+    restart: unless-stopped
+    hostname: {% if shinobi.domain %}{{ shinobi.domain }}{% else %}{{ shinobi.subdomain + "." + domain }}{% endif %}
+    networks:
+      - traefik_network
+      - shinobi
+    volumes:
+      - "{{ volumes_root }}/shinobi/streams:/dev/shm/streams"
+      - "{{ volumes_root }}/shinobi/config:/config"
+      - "{{ volumes_root }}/shinobi/db:/var/lib/mysql"
+      - "{{ storage_dir }}/Video/CCTV:/opt/shinobi/videos"
+    environment:
+      - ADMIN_USER={{ default_username }}
+      - ADMIN_PASSWORD="{{ default_password }}"
+      # - CRON_KEY=b59b5c62-57d0-4cd1-b068-a55e5222786f
+      # - PLUGINKEY_MOTION=49ad732d-1a4f-4931-8ab8-d74ff56dac57
+      # - PLUGINKEY_OPENCV=6aa3487d-c613-457e-bba2-1deca10b7f5d
+      # - PLUGINKEY_OPENALPR=SomeOpenALPRkeySoPeopleDontMessWithYourShinobi
+      - MOTION_HOST=localhost
+      - MOTION_PORT=8080
+      - MYSQL_USER=shinobi
+      - MYSQL_PASSWORD="{{lookup('password', './settings/passwords/shinobi_db_password chars=ascii_letters')}}"
+      - MYSQL_HOST=shinobi_db
+      - MYSQL_DATABASE=shinobi
+      - MYSQL_ROOT_PASSWORD="{{lookup('password', './settings/passwords/shinobi_db_root_password chars=ascii_letters')}}"
+      - MYSQL_ROOT_USER=root
+    labels:
+      - "traefik.http.services.shinobi.loadbalancer.server.scheme=http"
+      - "traefik.http.services.shinobi.loadbalancer.server.port=8080"
+{% include './labels.j2' %}
+    depends_on:
+      - shinobi_db
+
+  shinobi_db:
+    image: mariadb:{{ shinobi.db_version }}
+    restart: unless-stopped
+    networks:
+      - shinobi
+    volumes:
+      - "{{ volumes_root }}/shinobi/db:/var/lib/mysql"
+    environment:
+      - MYSQL_USER=shinobi
+      - MYSQL_PASSWORD="{{lookup('password', './settings/passwords/shinobi_db_password chars=ascii_letters')}}"
+      - MYSQL_DATABASE=shinobi
+      - MYSQL_ROOT_PASSWORD="{{lookup('password', './settings/passwords/shinobi_db_root_password chars=ascii_letters')}}"
+      - MYSQL_ROOT_USER=root

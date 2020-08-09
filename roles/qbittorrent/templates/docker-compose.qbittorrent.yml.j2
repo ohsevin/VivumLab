@@ -1,0 +1,32 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  app:
+    image: markusmcnugen/qbittorrentvpn:{{ qbittorrent.version }}
+    privileged: true
+    volumes:
+      - "{{ volumes_root }}/qbittorrent/config:/config"
+      - "{{ storage_dir }}/Downloads:/downloads"
+    environment:
+      - VPN_ENABLED={{ qbittorrent.vpn_enabled | lower }}
+      - LAN_NETWORK={{ qbittorrent.lan_network }}
+      - VPN_USERNAME={{ openvpn_username }}
+      - VPN_PASSWORD={{ openvpn_password }}
+      - PUID={{ uid_output.stdout }}
+      - PGID={{ gid_output.stdout }}
+    ports:
+      - '8999:8999'
+      - '8999:8999/udp'
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    labels:
+      - "traefik.http.services.qbittorrent.loadbalancer.server.scheme=http"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+{% include './labels.j2' %}

@@ -1,0 +1,26 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  sickchill:
+    image: sickchill/sickchill:{{ sickchill.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    ports:
+      - 8081:8081 #Checking
+    volumes:
+      - "{{ volumes_root }}/sickchill/data:/data"
+      - "{{ storage_dir }}/Downloads:/downloads"
+      - "{{ storage_dir }}/Video/TV:/tv"
+    labels:
+      - "traefik.http.services.sickchill.loadbalancer.server.scheme=http"
+      - "traefik.http.services.sickchill.loadbalancer.server.port=80"
+{% include './labels.j2' %}

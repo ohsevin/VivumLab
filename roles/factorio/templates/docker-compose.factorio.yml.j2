@@ -1,0 +1,17 @@
+---
+version: '3'
+
+networks:
+  factorio:
+
+services:
+  factorio:
+    image: factoriotools/factorio:{{ factorio.version }}
+    restart: unless-stopped
+    networks:
+      - factorio
+    volumes:
+      - "{{ volumes_root }}/factorio:/factorio"
+    ports:
+      - 34197:34197
+      - 27015:27015

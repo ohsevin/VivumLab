@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: no
+  tags: setup
+  vars_prompt:
+    - name: confirm_remove
+      prompt: "Are you sure you wish to remove this service? (true/false)"
+      private: "False"
+
+  roles:
+    - vivumlab_remove

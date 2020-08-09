@@ -1,0 +1,29 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  docs:
+    # Mkdocs and Nginx
+    image: voryzen/mkdocs:1.1.2
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    environment:
+      - PROJECT_NAME="Vivum Docs"
+      - PLUGINS="macros, mdv, pdfexport, git-revision-date-localized, mermaid2"
+      - CRON_TIMEFRAME="10h"
+      - ENABLE_PDF_EXPORT=0
+    volumes:
+      - {{ volumes_root }}/docs/mkdocs.yml:/src
+      - {{ volumes_root }}/docs/src:/src
+    labels:
+      - "traefik.http.services.docs.loadbalancer.server.scheme=http"
+      - "traefik.http.services.docs.loadbalancer.server.port=80"
+{% include './labels.j2' %}

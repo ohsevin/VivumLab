@@ -1,0 +1,28 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  # Home Automation
+  homeassistant:
+    image: homeassistant/home-assistant:{{ homeassistant.version }}
+    volumes:
+      - "{{ volumes_root }}/homeassistant:/config"
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/letsencrypt:/etc/letsencrypt
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    ports:
+      - 8123:8123
+      - 1883:1883
+      # - 8080:8080
+      - 51827:51827
+    labels:
+      - "traefik.http.services.homeassistant.loadbalancer.server.scheme=http"
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
+{% include './labels.j2' %}

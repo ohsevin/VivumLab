@@ -1,0 +1,24 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  codeserver:
+    image: codercom/code-server:{{ codeserver.version }}
+    environment:
+      - PASSWORD="{{ default_password }}"
+    volumes:
+      - "{{ volumes_root }}/codeserver/.local:/home/coder/.local"
+      - "{{ volumes_root }}/codeserver/project:/home/coder/project"
+    command: ['--auth', 'password', '--disable-telemetry']
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    labels:
+      - "traefik.http.services.codeserver.loadbalancer.server.scheme=http"
+      - "traefik.http.services.codeserver.loadbalancer.server.port=8080"
+{% include './labels.j2' %}

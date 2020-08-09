@@ -1,0 +1,39 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  openldap:
+
+services:
+  openldap:
+    image: osixia/openldap:{{ openldap.version }}
+    restart: unless-stopped
+    networks:
+      - openldap
+    ports:
+      - 389:389
+      - 689:689
+    volumes:
+      - "{{ volumes_root }}/openldap/data:/var/lib/data"
+      - "{{ volumes_root }}/openldap/config:/etc/ldap/slapd.d"
+    environment:
+      - LDAP_ORGANISATION="{{ ldap_org_name }}"
+      - LDAP_DOMAIN="{{ domain }}"
+      - LDAP_ADMIN_PASSWORD="{{ default_password }}"
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:{{ openldap.web_version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+      - openldap
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=openldap
+      - PHPLDAPADMIN_HTTPS=false
+    labels:
+      - "traefik.http.services.openldap.loadbalancer.server.scheme=http"
+      - "traefik.http.services.openldap.loadbalancer.server.port=80"
+{% include './labels.j2' %}

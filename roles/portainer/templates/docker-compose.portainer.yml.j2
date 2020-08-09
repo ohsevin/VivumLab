@@ -1,0 +1,22 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  # Docker Control
+  portainer:
+    image: portainer/portainer:{{ portainer.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "{{ volumes_root }}/portainer:/data"
+    labels:
+      - "traefik.http.services.portainer.loadbalancer.server.scheme=http"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+{% include './labels.j2' %}

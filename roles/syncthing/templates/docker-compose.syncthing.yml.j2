@@ -1,0 +1,28 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  # Sync Server
+  syncthing:
+    image: linuxserver/syncthing:{{ syncthing.version }}
+    networks:
+      - traefik_network
+    restart: unless-stopped
+    volumes:
+      - {{ volumes_root }}/syncthing/config:/config
+      - {{ storage_dir }}/Documents/Syncthing:/data
+    environment:
+      - PUID={{ uid_output.stdout }}
+      - PGID={{ gid_output.stdout }}
+    ports:
+      - 22000:22000
+      - 21027:21027/udp
+    labels:
+      - "traefik.http.services.syncthing.loadbalancer.server.scheme=http"
+      - "traefik.http.services.syncthing.loadbalancer.server.port=8384"
+{% include './labels.j2' %}

@@ -1,0 +1,26 @@
+---
+version: '3'
+
+# This networks section required for the pacakge to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  sui:
+    image: willfantom/sui:{{ sui.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/sui/configs:/sui"
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.http.services.sui.loadbalancer.server.scheme=http"
+      - "traefik.http.services.sui.loadbalancer.server.port=6999"
+{% include './labels.j2' %}
+      - "sui.enabled=true"
+      - "sui.name=dashboard"
+      - "sui.icon=home"

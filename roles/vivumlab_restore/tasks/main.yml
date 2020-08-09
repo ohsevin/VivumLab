@@ -1,0 +1,64 @@
+---
+- name: Be sure VivumLab is not running.
+  systemd:
+    name: vivumlab
+    state: stopped
+  ignore_errors: yes
+  become: yes
+
+- name: Ensure enable services are not running
+  systemd:
+    name: "{{ service_item }}"
+    state: stopped
+    enabled: no
+  when: query
+  loop: "{{ services | flatten(1) }}"
+  loop_control:
+    loop_var: service_item
+  ignore_errors: yes
+  vars:
+    query: "{{ service_item + '.enable' }}"
+  become: yes
+
+- name: Clear old VivumLab local backup if it exists.
+  file:
+    path: "{{ volumes_root }}.bak"
+    state: absent
+  ignore_errors: yes
+
+- name: Create local backup of VivumLab data (just in case).
+  command: mv "{{ volumes_root }}" "{{ volumes_root }}.bak"
+  ignore_errors: yes
+
+- name: Create a new VivumLab folder.
+  file:
+    path: "{{ volumes_root }}"
+    state: directory
+
+- name: Copy VivumLab restore.yml file into place.
+  template:
+    src: restore.yml
+    dest: "{{ volumes_root }}_restore.yml"
+
+- name: Spin up restore utility.
+  command: "docker-compose -f \"{{ volumes_root }}_restore.yml\" -p vivumlab_restore up -d"
+
+- name: Restore VivumLab data. (This could take quite a while depending on how much data you have.)
+  command: "docker exec vivumlab_restore_restore_1 restic restore latest --target /"
+
+- name: Stop restore utility.
+  command: "docker-compose -f \"{{ volumes_root }}_restore.yml\" -p vivumlab_restore down"
+
+- name: Ensure enable services are not running
+  systemd:
+    name: "{{ service_item }}"
+    state: started
+    enabled: yes
+  when: query
+  loop: "{{ services | flatten(1) }}"
+  loop_control:
+    loop_var: service_item
+  ignore_errors: yes
+  vars:
+    query: "{{ service_item + '.enable' }}"
+  become: yes

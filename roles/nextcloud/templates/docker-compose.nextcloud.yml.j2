@@ -1,0 +1,79 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  nextcloud:
+
+services:
+  nextcloud-db:
+    image: postgres:{{ nextcloud.db_version }}
+    restart: unless-stopped
+    volumes:
+      - "{{ volumes_root }}/nextcloud/postgres:/var/lib/postgresql/data"
+    networks:
+      - nextcloud
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD={{lookup('password', './settings/passwords/nextcloud_db_password chars=ascii_letters')}}
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+
+  nextcloud-redis:
+    image: redis:{{ nextcloud.redis_version }}
+    networks:
+      - nextcloud
+    restart: unless-stopped
+
+  nextcloud:
+    image: nextcloud:{{ nextcloud.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+      - nextcloud
+    user: {{ uid }}:{{ gid }}
+    sysctls:
+      - net.ipv4.ip_unprivileged_port_start=0
+      # The line above allows an unprivileged user (the uid/gid of the VivumLab user) to
+      # listen on any port (https://github.com/nextcloud/docker/issues/359)
+      # Used / needed for apache to l
+    volumes:
+      - "{{ volumes_root }}/nextcloud/webroot:/var/www/html"
+      - "{{ volumes_root }}/nextcloud/config:/var/www/html/config"
+      - "{{ storage_dir }}/Documents/NextCloud:/data"
+      - "{{ volumes_root }}/nextcloud/apps:/var/www/html/custom_apps"
+      - "{{ volumes_root }}/nextcloud/themes:/var/www/html/themes"
+      - "{{ storage_dir }}:/mnt/vivumlab"
+    environment:
+      - POSTGRES_HOST=nextcloud-db
+      - POSTGRES_PASSWORD={{lookup('password', './settings/passwords/nextcloud_db_password chars=ascii_letters')}}
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - UPLOAD_MAX_SIZE=10G
+      - APC_SHM_SIZE=128M
+      - OPCACHE_MEM_SIZE=128
+      - CRON_PERIOD=15m
+      - TZ={{ common_timezone }}
+      - REDIS_HOST=nextcloud-redis
+      - NEXTCLOUD_ADMIN_USER={{ default_username }}
+      - NEXTCLOUD_ADMIN_PASSWORD="{{ default_password }}"
+      - NEXTCLOUD_TRUSTED_DOMAINS={{ service_domain }}
+      - NEXTCLOUD_UPDATE=1 # triggers the automated install on first run.
+      # SMTP settings
+      - SMTP_HOST={{vault.smtp.host}}
+      - SMTP_SECURE={% if vault.smtp.port == 587 %}ssl{% endif %}
+
+      - SMTP_PORT={{vault.smtp.port}}
+      - SMTP_PASSWORD={{vault.smtp.pass}}
+      - MAIL_FROM_ADDRESS={{vault.smtp.from_email}}
+      - OVERWRITEHOST={{ service_domain }}
+      - OVERWRITEPROTOCOL=https
+    depends_on:
+      - nextcloud-db
+      - nextcloud-redis
+    labels:
+      - "traefik.http.services.nextcloud.loadbalancer.server.scheme=http"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+{% include './labels.j2' %}

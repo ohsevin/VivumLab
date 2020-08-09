@@ -1,0 +1,5 @@
+{
+  "supervisor": "{{hassio_docker}}",
+  "homeassistant": "{{ha_docker}}",
+  "data": "/var/vivumlab/homeassistant/share/hassio"
+}

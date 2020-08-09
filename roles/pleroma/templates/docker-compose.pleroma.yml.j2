@@ -1,0 +1,44 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  pleroma:
+
+services:
+  db:
+    image: postgres:{{ pleroma.db_version }}
+    restart: always
+    networks:
+      - pleroma
+    environment:
+      - POSTGRES_USER=pleroma
+      - POSTGRES_PASSWORD={{lookup('password', './settings/passwords/pleroma_db_password chars=ascii_letters')}}
+      - DB_PASS={{lookup('password', './settings/passwords/pleroma_db_password chars=ascii_letters')}}
+      - POSTGRES_DB=pleroma
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+  web:
+    image: git.pleroma.social:5050/pleroma/pleroma:latest
+    restart: unless-stopped
+    volumes:
+      - "{{ volumes_root }}/pleroma/uploads:/uploads"
+      - "{{ volumes_root }}/pleroma/config:/config"
+    networks:
+      - traefik_network
+      - pleroma
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_USER=pleroma
+      - DB_PASS={{lookup('password', './settings/passwords/pleroma_db_password chars=ascii_letters')}}
+      - POSTGRES_DB=pleroma
+    labels:
+      - "traefik.http.services.pleroma.loadbalancer.server.scheme=http"
+      - "traefik.http.services.pleroma.loadbalancer.server.port=4000"
+{% include './labels.j2' %}

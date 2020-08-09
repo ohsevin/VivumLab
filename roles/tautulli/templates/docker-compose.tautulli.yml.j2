@@ -1,0 +1,27 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  tautulli:
+    image: linuxserver/tautulli:{{ tautulli.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/tautulli/config:/config"
+      - "{{ volumes_root }}/plex/Library/Application Support/Plex Media Server/Logs:/logs:ro"
+    environment:
+      - PGID={{ gid_output.stdout }}
+      - PUID={{ uid_output.stdout }}
+      - TZ={{ common_timezone }}
+    labels:
+      - "traefik.http.services.tautulli.loadbalancer.server.scheme=http"
+      - "traefik.http.services.tautulli.loadbalancer.server.port=8181"
+{% include './labels.j2' %}

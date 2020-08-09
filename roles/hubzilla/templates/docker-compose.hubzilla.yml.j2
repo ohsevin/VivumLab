@@ -1,0 +1,67 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  hubzilla:
+
+services:
+  nginx:
+    # Nginx Web server
+    image: nginx:{{ hubzilla.web_version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+      - hubzilla
+    depends_on:
+      - hubzilla
+    volumes:
+      - {{ volumes_root }}/hubzilla/data:/var/www/hubzilla
+      - {{ volumes_root }}/hubzilla/conf/hubzilla-nginx.conf:/etc/nginx/nginx.conf:ro
+    labels:
+      - "traefik.http.services.hubzilla.loadbalancer.server.scheme=http"
+      - "traefik.http.services.hubzilla.loadbalancer.server.port=80"
+{% include './labels.j2' %}
+
+  hubzilla:
+  # Hubzilla service
+    image: voryzen/hubzilla:{{ hubzilla.version }}
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_TYPE: postgres
+      DB_NAME: hubzilla
+      DB_USER: hubzilla
+      DB_PASSWORD: {{lookup('password', './settings/passwords/hubzilla-db_password')}}
+      HUBZILLA_DOMAIN: {{ service_domain }}
+      HUBZILLA_ADMIN: admin@{{ service_domain }}
+      SMTP_HOST: {{ smtp.host }}
+      SMTP_PORT: {{ smtp.port }}
+      SMTP_USER: {{ smtp.user }}
+      SMTP_PASS: {{ smtp.pass }}
+      STANDALONE: false
+      TIMEZONE: {{ common_timezone }}
+    networks:
+      - hubzilla
+    volumes:
+      - {{ volumes_root }}/hubzilla/data:/var/www/hubzilla
+
+  postgres:
+  # PostgreSQL
+    image: postgres:{{ hubzilla.db_version }}
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: {{lookup('password', './settings/passwords/hubzilla-db_password')}}
+      POSTGRES_USER: hubzilla
+      POSTGRES_DB: hubzilla
+    volumes:
+      - {{ volumes_root }}/hubzilla/db:/var/lib/postgresql/data/
+    networks:
+    - hubzilla

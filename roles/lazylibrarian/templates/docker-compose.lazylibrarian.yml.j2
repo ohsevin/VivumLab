@@ -1,0 +1,28 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  app:
+    image: linuxserver/lazylibrarian:{{ lazylibrarian.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    environment:
+      - PUID={{ uid_output.stdout }}
+      - PGID={{ gid_output.stdout }}
+      - TZ={{ common_timezone }}
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "{{ volumes_root }}/lazylibrarian/config:/config"
+      - "{{ storage_dir }}/Books:/books"
+      - "{{ storage_dir }}/Downloads/completed/books:/downloads"
+    labels:
+      - "traefik.http.services.lazylibrarian.loadbalancer.server.scheme=http"
+      - "traefik.http.services.lazylibrarian.loadbalancer.server.port=5299"
+{% include './labels.j2' %}

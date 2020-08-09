@@ -1,0 +1,62 @@
+#jinja2: trim_blocks:False
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  gitea_net:
+
+services:
+ # Code Hosting
+  gitea:
+    image: gitea/gitea:{{ gitea.version }}
+    networks:
+      - traefik_network
+      - gitea_net
+    environment:
+      - USER_UID={{ uid_output.stdout }}
+      - USER_GID={{ gid_output.stdout }}
+{% if gitea.use_mariadb %}
+      - DB_TYPE=mysql
+      - DB_HOST=db:3306
+      - DB_NAME=gitea
+      - DB_USER=gitea
+      - DB_PASSWD={{ lookup('password', './settings/passwords/gitea_db_password chars=ascii_letters,digits') }}
+{% endif %}
+      - SSH_DOMAIN={% if gitea.domain %}{{ gitea.domain }}{% else %}{{ gitea.subdomain + "." + domain }}
+{% endif %}
+      - SSH_PORT={{ gitea.gitea_ssh_port }}
+      - LFS_START_SERVER=true
+      - RUN_MODE=prod
+      - ROOT_URL=https://{% if gitea.domain %}{{ gitea.domain }}{% else %}{{ gitea.subdomain + "." + domain }}
+{% endif %}
+    restart: unless-stopped
+    volumes:
+      - "{{ volumes_root }}/gitea:/data"
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "{{ gitea.gitea_ssh_port }}:22"
+    labels:
+      - "traefik.http.services.gitea.loadbalancer.server.scheme=http"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+{% include './labels.j2' %}
+{% if gitea.use_mariadb %}
+    depends_on:
+      - db
+
+  db:
+    image: mariadb
+    networks:
+      - gitea_net
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD={{ lookup('password', './settings/passwords/gitea_db_root_password chars=ascii_letters') }}
+      - MYSQL_USER=gitea
+      - MYSQL_DATABASE=gitea
+      - MYSQL_PASSWORD={{ lookup('password', './settings/passwords/gitea_db_password chars=ascii_letters') }}
+    volumes:
+      - "{{ volumes_root }}/gitea/db:/var/lib/mysql"
+{% endif %}

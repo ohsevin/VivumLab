@@ -1,0 +1,5 @@
+ansible_host: "{{ vlab_ip }}"
+ansible_port: "{{ vlab_port }}"
+ansible_user: "{{ vlab_ssh_user }}"
+ansible_ssh_port: "{{ vlab_port }}"
+ansible_ssh_user: "{{ vlab_ssh_user }}"

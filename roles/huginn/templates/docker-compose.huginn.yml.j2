@@ -1,0 +1,62 @@
+---
+version: '3'
+
+# This networks section required for the package to be visible to Traefik.
+# DO NOT Remove
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  huginn:
+
+services:
+  mariadb:
+    image: mariadb:{{ huginn.db_version }}
+    networks:
+      - huginn
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD={{lookup('password', './settings/passwords/huginn_mysql_root_password chars=ascii_letters')}}
+      - HUGINN_DATABASE_PASSWORD={{lookup('password', './settings/passwords/huginn_db_password chars=ascii_letters')}}
+      - HUGINN_DB_ROOT_PASSWORD={{lookup('password', './settings/passwords/huginn_mysql_root_password chars=ascii_letters')}}
+      - HUGINN_DATABASE_USERNAME=root
+      - HUGINN_DATABASE_NAME=huginn
+    volumes:
+      - "{{ volumes_root }}/huginn/mysql-data:/var/lib/mysql"
+
+  web:
+    networks:
+      - traefik_network
+      - huginn
+    image: huginn/huginn-single-process:{{ huginn.version }}
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD={{lookup('password', './settings/passwords/huginn_mysql_root_password chars=ascii_letters')}}
+      - HUGINN_DATABASE_PASSWORD={{lookup('password', './settings/passwords/huginn_mysql_root_password chars=ascii_letters')}}
+      - MYSQL_PORT_3306_TCP_ADDR=mariadb
+      - HUGINN_DATABASE_USERNAME=root
+      - HUGINN_DATABASE_NAME=huginn
+      - APP_SECRET_TOKEN={{lookup('password', './settings/passwords/huginn_appToken_password length=128')}}
+    labels:
+      - "traefik.http.services.huginn.loadbalancer.server.scheme=http"
+      - "traefik.http.services.huginn.loadbalancer.server.port=3000"
+{% include './labels.j2' %}
+    depends_on:
+      - mariadb
+
+  threaded:
+    networks:
+      - huginn
+    image: huginn/huginn-single-process:{{ huginn.version }}
+    command: /scripts/init bin/threaded.rb
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD={{lookup('password', './settings/passwords/huginn_mysql_root_password chars=ascii_letters')}}
+      - HUGINN_DATABASE_PASSWORD={{lookup('password', './settings/passwords/huginn_mysql_root_password chars=ascii_letters')}}
+      - MYSQL_PORT_3306_TCP_ADDR=mariadb
+      - HUGINN_DATABASE_USERNAME=root
+      - HUGINN_DATABASE_NAME=huginn
+      - APP_SECRET_TOKEN={{lookup('password', './settings/passwords/huginn_appToken_password length=128')}}
+    depends_on:
+      - mariadb
+      - web

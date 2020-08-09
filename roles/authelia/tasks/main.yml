@@ -1,0 +1,79 @@
+---
+
+- set_fact:
+    kernel_version: "{{ ansible_kernel.split('-')[0] }}"
+
+- set_fact:
+    kernel_major_minor: "{{ kernel_version.split('.')[0]}}.{{kernel_version.split('.')[1] }}"
+
+- set_fact:
+    kernel_options:
+      '5.3': '5.3.15'
+      '5.4': '5.4.2'
+      '5.5': '5.5'
+      '5.6': '5.6'
+      '5.7': '5.7'
+
+- name: Ensure Host Kernel version is adequate for Authelia install
+  fail:
+    msg: "Your kernel version {{ ansible_kernel }} Does not meet the minimum requirements for Authelia. Please see https://github.com/pimlie/ubuntu-mainline-kernel.sh for a kernel upgrade script"
+  when: "{{ kernel_version is not version(kernel_options[kernel_major_minor], '>=', true) }}"
+
+
+- name: Make authelia directory.
+  file:
+    path: "{{ volumes_root }}/authelia"
+    state: directory
+
+- name: Copy authelia docker-compose.yml file into place.
+  template:
+    src: docker-compose.authelia.yml.j2
+    dest: "{{ volumes_root }}/authelia/docker-compose.yml"
+  vars:
+    tor_domain: "{{ tor_http_domain_file.stdout | default('') }}"
+
+- name: Generate new argon2id compatible password.
+  shell: >
+    docker run --rm authelia/authelia:latest authelia hash-password "{{ default_password }}" | awk '{print $3}'
+  register: authelia_hash
+
+- name: Copy userdb.yml file into place.
+  template:
+    src: userdb.yml.j2
+    dest: "{{ volumes_root }}/authelia/userdb.yml"
+  vars:
+    authelia_hash: "{{ authelia_hash.stdout }}"
+
+- name: Copy authelia_config.yml file into place.
+  template:
+    src: authelia_config.yml.j2
+    dest: "{{ volumes_root }}/authelia/authelia_config.yml"
+  vars:
+    domain_parts: "{{ domain.split('.') }}"
+
+- name: Copy authelia_config-tor.yml file into place.
+  template:
+    src: authelia_config-tor.yml.j2
+    dest: "{{ volumes_root }}/authelia/authelia_config-tor.yml"
+  vars:
+    domain_parts: "{{ domain.split('.') }}"
+
+- name: Configure authelia systemd service.
+  become: yes
+  template:
+    src: service.j2
+    dest: /etc/systemd/system/authelia.service
+
+- name: Start authelia
+  systemd:
+    name: authelia
+    enabled: yes
+    daemon-reload: yes
+    state: started
+  become: yes
+
+- debug:
+    msg:
+      - "Authelia redirects to {{ authelia.redirect_url }}"
+      - "You can change this by setting the authelia.redirect_url setting to the one of your own choice."
+      - "Example: ./set_setting authelia.redirect_service https://heimdall.example.com"

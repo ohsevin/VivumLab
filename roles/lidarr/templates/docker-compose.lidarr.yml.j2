@@ -1,0 +1,27 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  lidarr:
+    image: hotio/lidarr:{{ lidarr.version }}
+    networks:
+      - traefik_network
+    volumes:
+      - "{{ volumes_root }}/lidarr/config:/config"
+      - "{{ storage_dir }}/Music:/media/Music"
+    environment:
+      - TZ={{ common_timezone }}
+      - PUID={{ uid }}
+      - PGID={{ gid }}
+      - UMASK=022
+      - VERSION=stable
+      - BACKUP=yes
+    labels:
+      - "traefik.http.services.lidarr.loadbalancer.server.scheme=http"
+      - "traefik.http.services.lidarr.loadbalancer.server.port=8686"
+{% include './labels.j2' %}

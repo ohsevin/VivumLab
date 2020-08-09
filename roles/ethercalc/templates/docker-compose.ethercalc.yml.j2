@@ -1,0 +1,33 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  ethercalc:
+
+services:
+  ethercalc_redis:
+    image: redis:{{ ethercalc.redis_version }}
+    networks:
+      - ethercalc
+    volumes:
+      - {{ volumes_root }}/ethercalc/redis:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  ethercalc:
+    # REQUIRED
+    image: audreyt/ethercalc:{{ ethercalc.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+      - ethercalc
+    environment:
+      - REDIS_PORT_6379_TCP_ADDR=ethercalc_redis
+      - RESIS_PORT_6379_TCP_PORT=6379
+    labels:
+      - "traefik.http.services.ethercalc.loadbalancer.server.scheme=http"
+      - "traefik.http.services.ethercalc.loadbalancer.server.port=8000"
+{% include './labels.j2' %}

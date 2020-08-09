@@ -1,0 +1,27 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  # Web based KVM manager
+  app:
+    image: odivlad/webvirtmgr:{{ webvirtmgr.version }}
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    volumes:
+      - '{{ volumes_root }}/webvirtmgr/data:/data/'
+    environment:
+      - WEBVIRTMGR_ADMIN_USERNAME=admin
+      - WEBVIRTMGR_ADMIN_EMAIL=admin@local.domain
+      - WEBVIRTMGR_ADMIN_PASSWORD="{{lookup('password', './settings/passwords/webvirtmgr_db_password chars=ascii_letters')}}"
+    ports:
+      - '8000:8000'
+    labels:
+      - "traefik.http.services.webvirtmgr.loadbalancer.server.scheme=http"
+      - "traefik.http.services.webvirtmgr.loadbalancer.server.port=8000"
+{% include './labels.j2' %}

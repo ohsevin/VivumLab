@@ -1,0 +1,40 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+  wekan-tier:
+    driver: bridge
+
+services:
+  wekandb:
+    image: mongo:{{ wekan.db_version }}
+    container_name: wekan-db
+    restart: unless-stopped
+    command: mongod --smallfiles --oplogSize 128
+    networks:
+      - wekan-tier
+    expose:
+      - 27017
+    volumes:
+      - "{{ volumes_root }}/wekan/wekan-db:/data/db"
+      - "{{ volumes_root }}/wekan/wekan-db-dump:/dump"
+
+  wekan:
+    image: quay.io/wekan/wekan:{{ wekan.version }}
+    container_name: wekan-app
+    restart: unless-stopped
+    networks:
+      - traefik_network
+      - wekan-tier
+    environment:
+      - MONGO_URL=mongodb://wekandb:27017/wekan
+      - ROOT_URL=http://{{ wekan.subdomain }}.{{ domain }}
+    depends_on:
+      - wekandb
+    labels:
+      - "traefik.http.services.wekan.loadbalancer.server.scheme=http"
+      - "traefik.http.services.wekan.loadbalancer.server.port=8080"
+{% include './labels.j2' %}

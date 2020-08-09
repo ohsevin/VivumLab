@@ -1,0 +1,32 @@
+---
+version: '3'
+
+networks:
+  traefik_network:
+    external:
+      name: vivumlab_traefik
+
+services:
+  app:
+    image: linuxserver/healthchecks:{{ healthchecks.version }}
+    networks:
+      - traefik_network
+    environment:
+      - PUID={{ uid_output.stdout }}
+      - PGID={{ gid_output.stdout }}
+      - SITE_ROOT={% if healthchecks.domain %}{{ healthchecks.domain }}{% else %}{{ healthchecks.subdomain + "." + domain }}{% endif %}
+      - SITE_NAME={% if healthchecks.domain %}{{ healthchecks.domain }}{% else %}{{ healthchecks.subdomain + "." + domain }}{% endif %}
+      - DEFAULT_FROM_EMAIL={{smtp.from_email}}
+      - EMAIL_HOST={{smtp.host}}
+      - EMAIL_PORT={{smtp.port}}
+      - EMAIL_HOST_USER={{smtp.user}}
+      - EMAIL_HOST_PASSWORD={{smtp.pass}}
+      - EMAIL_USE_TLS=False
+    volumes:
+      - "{{ volumes_root }}/healthchecks/config:/config"
+
+    restart: unless-stopped
+    labels:
+      - "traefik.http.services.healthchecks.loadbalancer.server.scheme=http"
+      - "traefik.http.services.healthchecks.loadbalancer.server.port=8000"
+{% include './labels.j2' %}
