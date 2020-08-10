@@ -16,4 +16,4 @@ jobs:
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CUSTOM_DOMAIN: vivumlab.com
+          CUSTOM_DOMAIN: docs.vivumlab.com
