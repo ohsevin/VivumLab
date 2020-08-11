@@ -4,6 +4,7 @@
 
   tasks:
     - name: Restart services
+      become: yes
       systemd:
         name: "{{ service_item }}"
         state: restarted

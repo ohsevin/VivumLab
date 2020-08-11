@@ -53,7 +53,7 @@ Task::build() {
     if [[ $VERSION_CURRENT == $VERSION_LATEST ]] ; then
       VERSION_DOCKER=latest
     fi
-    sudo docker pull docker.pkg.github.com/vivumlaboratory/vivumlab/vlab:$VERSION_DOCKER
+    sudo docker pull docker.pkg.github.com/denis-ev/vivumlab/vlab:$VERSION_DOCKER
   else
     if [[ ${_cache-true} == false ]] ; then
       sudo docker build . --no-cache --force-rm -t vlab:$VERSION_DOCKER
@@ -192,7 +192,7 @@ Task::check_version() {
 
   VERSION_CURRENT=$(cat VERSION)
   VERSION_LATEST=$(cat VERSION)
-  #VERSION_LATEST=$(curl -s -m 2 https://github.com/VivumLaboratory/VivumLab/raw/master/VERSION)
+  #VERSION_LATEST=$(curl -s -m 2 https://github.com/denis-ev/VivumLab/raw/master/VERSION)
 
   function version_gt() { test "$(echo "$@" | tr " " "\n" | sort | head -n 1)" != "$1"; }
 
@@ -201,7 +201,7 @@ Task::check_version() {
 
   if version_gt $VERSION_LATEST $VERSION_CURRENT; then
     colorize red "* You should update to version $VERSION_LATEST! *"
-    colorize red " * Update at https://github.com/VivumLaboratory/VivumLab/-/releases *"
+    colorize red " * Update at https://github.com/denis-ev/VivumLab/-/releases *"
   else
     colorize green "You are up to date!"
   fi

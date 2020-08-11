@@ -111,7 +111,7 @@ If you still don't trust it, great, you'll fit right in here. Proceed to the Man
 
 ### Manual Set-up
 
-* Download the [latest version](https://github.com/VivumLaboratory/VivumLab/-/releases) to your client computer and extract the folder. From inside the folder run `./vlab install_cli` now you can run `vlab` directly. Otherwise just append `./` to the `vlab` commands listed below.
+* Download the [latest version](https://github.com/denis-ev/VivumLab/-/releases) to your client computer and extract the folder. From inside the folder run `./vlab install_cli` now you can run `vlab` directly. Otherwise just append `./` to the `vlab` commands listed below.
 
 !!! Note
     If you are using VivumLab to provision a [bastion](Bastion.md) server, run: `$ vlab terraform`

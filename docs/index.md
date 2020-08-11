@@ -14,7 +14,7 @@ VivumLab is a collection of various separate services. You can find more informa
 
 If you are having problems you can:
 
-- [File an issue on Github](https://github.com/VivumLaboratory/VivumLab/issues).
+- [File an issue on Github](https://github.com/denis-ev/VivumLab/issues).
 - [Ask a question on VivumLab Reddit](https://www.reddit.com/r/VivumLab/)
 - [Ask a question VivumLab Zulip Chat](https://vivumlab.zulipchat.com/)
 

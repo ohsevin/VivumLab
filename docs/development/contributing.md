@@ -6,7 +6,7 @@ VivumLab follows a common Open Source Software development workflow. A core grou
 
 # Submitting Merge Requests
 
-All work should start with an [issue on Github](https://github.com/VivumLaboratory/VivumLab/issues/new). After creating a detailed issue, it's usually best to wait a day or two before beginning work, to gather feedback from the community.
+All work should start with an [issue on Github](https://github.com/denis-ev/VivumLab/issues/new). After creating a detailed issue, it's usually best to wait a day or two before beginning work, to gather feedback from the community.
 
 A good MR is small and changes as few lines of code as possible to resolve the issue. Multiple smaller separate MRs are ofter better than one big MR that touches multiple areas of the code. They're easier to review, test, and merge.
 
@@ -26,9 +26,9 @@ To contribute a bug fix, service, or enhancement you'll need to:
 
 To set yourself up to contribute to VivumLab, you'll need a working understanding of Git, and a Gitlab account. Those prequisites are left as an exercise to the reader.
 
-1. Create your own fork by clicking the "Fork" button at https://github.com/VivumLaboratory/VivumLab: ![Fork button location](fork.png)
+1. Create your own fork by clicking the "Fork" button at https://github.com/denis-ev/VivumLab: ![Fork button location](fork.png)
 
-2. In your fork, goto Settings/Repository -> "Mirroring repositories" and setup mirroring of VivumLaboratory/VivumLab
+2. In your fork, goto Settings/Repository -> "Mirroring repositories" and setup mirroring of denis-ev/VivumLab
 ![Screen Shot of Mirror setup](mirror.png)
 
     Mirror direction = Pull
@@ -53,7 +53,7 @@ Gitlab is great for tracking changes to source code, but it relies on the develo
 ## Making a contribution to a new Issue
 
 1. Make sure you don't have any outstanding un-related changes in your local repository with `git status`. You should see `nothing to commit, working tree clean`.
-2. Create an issue in the [master project Github](https://github.com/VivumLaboratory/VivumLab/issues). From this issue, click the `Create Merge Request` button.
+2. Create an issue in the [master project Github](https://github.com/denis-ev/VivumLab/issues). From this issue, click the `Create Merge Request` button.
 3. Now click the `Check Out Branch` button and copy Step 1, run that command on your local copy of the repository.
 4. Now make your changes and commit and push them.
 5. In Github, go to your Merge Request and make sure it is not labeled WIP and that all the check boxes are checked (If applicable).
