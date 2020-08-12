@@ -50,7 +50,7 @@
 # Install and configure VivumLab services
 - name: Install and configure VivumLab services
   hosts: vivumlab
-  gather_facts: no
+  gather_facts: yes
   tags:
     - vivumlab
     - deploy
