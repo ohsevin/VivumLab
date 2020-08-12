@@ -8,16 +8,16 @@
   file:
     path: "{{ volumes_root }}/privatebin/data"
     state: directory
-    owner: 65534
-    group: 82
+    owner: "65534"
+    group: "82"
   become: yes
 
 - name: Make privatebin conf directory with correct permissions.
   file:
     path: "{{ volumes_root }}/privatebin/cfg"
     state: directory
-    owner: 65534
-    group: 82
+    owner: "65534"
+    group: "82"
   become: yes
 
 - name: Copy privatebin conf.php file into place if it doesn't exist.
