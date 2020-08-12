@@ -4,10 +4,11 @@
 Task::update() {
   : @desc "Updates all services on the VivumLab Server"
   : @param config_dir="settings"
-  #Task::logo
-  #Task::build
-  #Task::git_sync
-  #Task::config
+
+  Task::logo
+  Task::build
+  Task::git_sync
+  Task::config
 
   highlight "Updating VivumLab Services using $_config_dir"
   Task::run_docker ansible-playbook --extra-vars="@$_config_dir/config.yml" --extra-vars="@$_config_dir/vault.yml" -i inventory -t deploy playbook.vivumlab.yml
