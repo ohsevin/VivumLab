@@ -17,6 +17,18 @@ function debug_check() {
     echo '-vv'
   elif [[ ${_debug-true} == true ]]; then
     echo '-vv'
+
+function build_check() {
+  if [[ ${_build-true} == true ]]; then
+    echo 'build=true'
+   else
+    echo ''
+  fi
+}
+
+function force_check() {
+  if [[ ${_force-true} == true ]]; then
+    echo 'force=true'
   else
     echo ''
   fi
