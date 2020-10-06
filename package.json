@@ -1,34 +1,111 @@
 {
   "name": "vivumlab",
-  "version": "0.0.1",
-  "description": "![Docker](https://github.com/Vivumlab/VivumLab/workflows/Docker/badge.svg?branch=master)",
-  "main": "commitlint.config.js",
+  "version": "0.0.0-development",
+  "description": "VivumLab",
   "directories": {
     "doc": "docs"
   },
+  "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "@commitlint/travis-cli": "^11.0.0",
+    "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/commit-analyzer": "^8.0.1",
+    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/github": "^7.1.1",
+    "@semantic-release/release-notes-generator": "^9.0.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "semantic-release": "^17.1.2",
+    "semantic-release-docker": "^2.2.0",
+    "semantic-release-plugin-update-version-in-files": "^1.1.0"
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING CHANGES",
+              "BREAKING"
+            ]
+          },
+          "writerOpts": {
+            "commitsSort": [
+              "subject",
+              "scope"
+            ]
+          }
+        }
+      ],
+      [
+        "semantic-release-plugin-update-version-in-files",
+        {
+          "files": [
+            "VERSION",
+            ".cz.toml"
+          ],
+          "placeholder": "0.0.0-development"
+        }
+      ],
+      "@semantic-release/changelog",
+      [
+        "@semantic-release/npm",
+        {
+          "npmPublish": false
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "CHANGELOG.md",
+            ".cz.toml",
+            "VERSION"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ],
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "docker build -t vivumlab/vivumlab ."
+        }
+      ],
+      [
+        "semantic-release-docker",
+        {
+          "name": "vivumlab/vivumlab"
+        }
+      ],
+      "@semantic-release/github",
+      "semantic-release-docker"
+    ]
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Vivumlab/VivumLab.git"
+    "url": "https://github.com/VivumLab/VivumLab.git"
   },
-  "author": "",
+  "author": "VivumLab",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Vivumlab/VivumLab/issues"
+    "url": "https://github.com/VivumLab/VivumLab/issues"
   },
-  "homepage": "https://github.com/Vivumlab/VivumLab#readme",
-  "devDependencies": {
-    "@commitlint/cli": "^9.1.2",
-    "@commitlint/config-conventional": "^9.1.1",
-    "@commitlint/travis-cli": "^9.1.1",
-    "commitizen": "^4.1.2",
-    "cz-conventional-changelog": "^3.2.0"
-  },
+  "homepage": "https://github.com/VivumLab/VivumLab#readme",
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "@semantic-release/exec": "^5.0.0"
   }
 }
