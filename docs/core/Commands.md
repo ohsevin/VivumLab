@@ -63,7 +63,7 @@ Builds the Docker Image used to deploy
 
 #### git_sync
 Manually forces a settings sync via git
-    example: **``**
+    example: **`vlab git_sync`** **UNDER CONSTRUCTION**
 
 #### encrypt
 Encrypts the vault
@@ -79,7 +79,7 @@ Uninstalls Vivumlab
 
 #### restore
 Restore a server from backups. Assuming backups were running
-    example: **``**
+    example: **`vlab restore`** **UNDER CONSTRUCTION**
 
 #### shell
 Opens a shell on the remote server
@@ -90,6 +90,11 @@ Opens a shell in the VivumLab deploy container
     example: **`vlab docker_shell`**
 NOTE: You will not be able to exit out of the docker container.
 NOTE: If you wanted to access outside the container, use the shell command
+
+#### create_sshkey
+Creates an SSH Key, based on the name provided by the user when `vlab config` was run.
+    example **`vlab create_sshkey`**
+NOTE: Will ask for a password. Will still work, even if you do not provide one.
 
 #### track
 Switches you to the specified branch or tag.
@@ -104,6 +109,10 @@ Checks the current version
 #### install_cli
 Links the vlab cli into /usr/local/bin so you can call vlab without the ./
     example: **`./vlab install_cli`**
+
+#### find_help
+Tells the user where to find help/ contact the VivumLab Community
+    example: **`vlab find_help`**
 
 ## Service Commands
 These are specific to the service declared in the command. These commands should not affect any other service; unless the running of the service depends on another, eg. Authelia.
@@ -131,4 +140,3 @@ Resets the specified service' files on the Vivumlab server
 #### service_edit
 Allows the user to make changes to the way a specified service is deployed, without making changes to the core/provided files. See [Next Steps](Next-Step.md) for more information.
     example (editing Jellyfin): **`vlab service_edit service=jellyfin`**
-NOTE: Availability TBA
