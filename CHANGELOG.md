@@ -1,3 +1,21 @@
+## [0.3.0](https://github.com/VivumLab/VivumLab/compare/v0.2.0...v0.3.0) (2020-10-22)
+
+
+### Features
+
+* **release:** :white_check_mark: add semantic-release dry-run for dev branch ([#106](https://github.com/VivumLab/VivumLab/issues/106)) ([22ef4fa](https://github.com/VivumLab/VivumLab/commit/22ef4faad1994e531764ff6bbee8e3fe43d3b890))
+* **docs:** Add options to specified commands ([#107](https://github.com/VivumLab/VivumLab/issues/107)) ([33e8dc4](https://github.com/VivumLab/VivumLab/commit/33e8dc40eee1fc5c402292376a8ab34fcb855476))
+
+
+### Bug Fixes
+
+* **service:** :bug: fix netdata errors ([#92](https://github.com/VivumLab/VivumLab/issues/92)) ([56128d7](https://github.com/VivumLab/VivumLab/commit/56128d71268255ac9b35c3d823f51abc3e229ea6))
+* **service:** :bug: fixed wrong ansible variable in bitwarden ([#96](https://github.com/VivumLab/VivumLab/issues/96)) ([036c3db](https://github.com/VivumLab/VivumLab/commit/036c3db27a6e7e906263b78b7a69587d4d5d29c6))
+* **core:** fixes deploy error for CentOS ([#109](https://github.com/VivumLab/VivumLab/issues/109)) ([b748c88](https://github.com/VivumLab/VivumLab/commit/b748c88995d2daf7093688ea555a2bf048ae3839))
+* **service:** fixing docs service ([#105](https://github.com/VivumLab/VivumLab/issues/105)) ([7f1a388](https://github.com/VivumLab/VivumLab/commit/7f1a388173968502bef296b2de1cb5917f729a62))
+* **core:** rename vlabTasks.sh, fix image versioning ([#103](https://github.com/VivumLab/VivumLab/issues/103)) ([ab414b5](https://github.com/VivumLab/VivumLab/commit/ab414b5f53a68b2bc2bd04fc09957f98746d764a))
+* **core:** vivum logo/link, contributing.md, other docs ([#102](https://github.com/VivumLab/VivumLab/issues/102)) ([1c1b42a](https://github.com/VivumLab/VivumLab/commit/1c1b42accfdfb70bb3f22885565dfdc445bfccb2))
+
 ## [0.2.0](https://github.com/VivumLab/VivumLab/compare/v0.1.0...v0.2.0) (2020-10-18)
 
 
