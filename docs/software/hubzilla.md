@@ -2,28 +2,46 @@
 
 [Hubzilla](https://framagit.org/hubzilla) is a powerful platform for creating interconnected websites featuring a [decentralized/nomadic identity](https://zotlabs.org/page/hubzilla/hubzilla-project).
 
-The docker image comes from [voryzen/hubzilla:4.6](https://hub.docker.com/r/gonzague/homedash)
-and currently does not support arm devices.
-If you are aware of a suitable substitution or replacement ([good place to start](https://hub.docker.com/search?q=hubzilla&type=image&architecture=arm%2Carm64%2Camd64)),
- [please see issue 478](https://github.com/Vivumlab/VivumLab/-/issues/478)
-and test your idea using the [documentation](https://vivumlab.com/development/adding_services/).
+![amd64](https://img.shields.io/badge/{% if not hubzilla.amd64 %}untested{% else %}{{ hubzilla.amd64 }}{% endif %}-amd64-{% if not hubzilla.amd64 %}inactive{% elif hubzilla.amd64 == "verified" %}success{% elif hubzilla.amd64 == "supported" %}informational{% elif hubzilla.amd64 == "unsupported" %}critical{% endif %}?style=flat)
+![arm64](https://img.shields.io/badge/{% if not hubzilla.arm64 %}untested{% else %}{{ hubzilla.arm64 }}{% endif %}-arm64-{% if not hubzilla.arm64 %}inactive{% elif hubzilla.arm64 == "verified" %}success{% elif hubzilla.arm64 == "supported" %}informational{% elif hubzilla.arm64 == "unsupported" %}critical{% endif %}?style=flat)
+![armv7](https://img.shields.io/badge/{% if not hubzilla.armv7 %}untested{% else %}{{ hubzilla.armv7 }}{% endif %}-armv7-{% if not hubzilla.armv7 %}inactive{% elif hubzilla.armv7 == "verified" %}success{% elif hubzilla.armv7 == "supported" %}informational{% elif hubzilla.armv7 == "unsupported" %}critical{% endif %}?style=flat)
 
-## Setup
+## Information
 
-To enable Hubzilla, run the following command:
 
-**`make set hubzilla.enable true`**
+**Docker Image:** !!! LINK TO DOCKER IMAGE/ DOCKER HUB !!! \
+**Current Image Version:** {{ hubzilla.version }}
 
-then run **`make update_one hubzilla`** to finalise the changes
+## SETUP
 
-alternatively, you can set the appropriate service settings in `settings/config.yml` to True, and then run **``make update_one hubzilla``**
+### Enabling hubzilla
+
+#### Command:
+
+**`vlab set hubzilla.enable True`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
 
 eg.
 ```
-hubzilla:
+hubzilla
   enable: True
 ```
-## First Run
+
+#### Finalising changes:
+
+run: **`vlab update_one service=hubzilla`**
+
+## FIRST RUN
+
+!!! **DEVELOPERS**: make sure that you include any information that the user requires to get started, below. !!!
+
+!!! Below are some **examples** with headings, and with some **example** instructions !!!
+
+#### ADMINISTRATOR SETUP
+
 The first time you access Hubzilla, you will need to **set up the admin account BEFORE** you set any other user account.
 
 To do this:
@@ -40,7 +58,11 @@ Step 4 is a suggestion/ reminder from VivumLab. It is beyond the scope of VivumL
 Hubzilla isn't new, so there is plenty of information out there.
 ```
 
-## SMTP/ Mail
+#### SMTP/ MAIL
+
+1. run **`vlab decrypt`** to decrypt the `vault.yml` file
+
+2. make some changes
 
 Hubzilla makes pretty good use of a mail server. If you don't want to run your own, sign up for a service like [mailgun](https://www.mailgun.com/).
 
@@ -48,12 +70,8 @@ Setting up such a service is beyond the scope of the VivumLab documentation, how
 
 Once you have access to a mail server, or a mail service provide Hubzilla with the necessary information.
 
-1. run **`make decrypt`** to decrypt the `vault.yml` file, located in your vivumlab `settings` folder.
-
-2. Access that file (you might need superuser/root/administrator permissions) and change the following options to reflect your own credentials
-
+##### SMTP Settings
 ```
-# SMTP Settings
 smtp:
   host:
   port:
@@ -62,31 +80,132 @@ smtp:
   from_email:
   from_name:
 ```
-3. Then run **`make update_one hubzilla`** to update Hubzilla; VivumLab will automatically re-encrypt your vault.yml file
 
-## Access
+3. run **`vlab update_one service=hubzilla`** to complete the changes
 
-It is available at [https://hubzilla.{{ domain }}/](https://hubzilla.{{ domain }}/) or [http://hubzilla.{{ domain }}/](http://hubzilla.{{ domain }}/)
+
+## ACCESS
+
+hubzilla (HTTPS) link: [https://{% if hubzilla.domain %}{{ hubzilla.domain }}{% else %}{{ hubzilla.subdomain + "." + domain }}{% endif %}/](https://{% if hubzilla.domain %}{{ hubzilla.domain }}{% else %}{{ hubzilla.subdomain + "." + domain }}{% endif %}/)
+hubzilla (HTTP) link: [http://{% if hubzilla.domain %}{{ hubzilla.domain }}{% else %}{{ hubzilla.subdomain + "." + domain }}{% endif %}/](http://{% if hubzilla.domain %}{{ hubzilla.domain }}{% else %}{{ hubzilla.subdomain + "." + domain }}{% endif %}/)
 
 {% if enable_tor %}
-It is also available via Tor at [http://hubzilla.{{ tor_domain }}/](http://hubzilla.{{ tor_domain }}/)
+Tor link: [http://{{ hubzilla.subdomain + "." + tor_domain }}/](http://{{ hubzilla.subdomain + "." + tor_domain }}/)
 {% endif %}
 
-## Security enable/disable https_only and auth
+## OPTIONS
 
-To enable https_only or auth, run the appropriate command:
+### HTTPS_ONLY
+*Default: False*
+*Options: True/False*
 
-**`make set hubzilla.https_only true`**
+#### Command:
 
-**`make set hubzilla.auth true`**
+**`vlab set hubzilla.https_only True`**
 
-then run **`make update_one hubzilla`** to finalise the changes
+#### File alteration:
 
-alternatively, you can set the appropriate service settings in `settings/config.yml` to True, and then run **``make update_one hubzilla``**
+set the appropriate service settings in `settings/config.yml` to true
 
 eg.
 ```
-hubzilla:
+hubzilla
   https_only: True
+```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=hubzilla`**
+
+### AUTH
+*Default: False*
+*Options: True/False*
+
+#### Command:
+
+**`vlab set hubzilla.auth True`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+hubzilla
   auth: True
 ```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=hubzilla`**
+
+### DOMAIN
+*Default: False*
+*NOTE: include the sitename and top level domain suffix. eg. name.com, site.net*
+
+#### Command:
+
+**`vlab set hubzilla.domain hubzilla.com`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+hubzilla
+  domain: hubzilla.com
+```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=hubzilla`**
+
+### SUBDOMAIN
+*Default: hubzilla*
+*NOTE: Periods/ delimiters are not required. eg. 'media' will set the full URL as 'media.{{domain}}'*
+
+#### Command:
+
+**`vlab set hubzilla.subdomain media`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+hubzilla
+  subdomain: media
+```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=hubzilla`**
+
+### VERSION
+*Default: {{  hubzilla.version  }}*
+*NOTE: Ensure that the version exists*
+
+#### Command:
+
+**`vlab set hubzilla.version 2.7`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+hubzilla
+  version: 2.7
+```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=hubzilla`**
+
+## Need more help?
+Further information regarding services can be found. \
+General Information can be found in the [documentation](https://docs.vivumlab.com). \
+Additional assistance can be found on our [Contact Us](https://docs.vivumlab.com/Contact-us) page.

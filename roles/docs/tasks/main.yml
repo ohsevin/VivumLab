@@ -24,7 +24,7 @@
   git:
     repo: https://github.com/VivumLab/VivumLab.git
     dest: "{{ volumes_root }}/docs/src"
-    version: master
+    version: "v{{ current_version_file.stdout }}"
     force: yes
 
 - name: Copy docs md files into place
@@ -35,7 +35,7 @@
   when: item.state == 'file' and (item.path | basename | regex_search('(.md)'))
 
 - name: Copy docs other files into place
-  file:
+  copy:
     src: "{{ item.src }}"
     dest: "{{ volumes_root }}/docs/src/docs/{{ item.path }}"
   with_filetree: docs/

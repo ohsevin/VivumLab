@@ -2,19 +2,45 @@
 
 [Funkwhale](https://Funkwhale.audio/en_US/) A social platform to enjoy and share music
 
-The docker image comes from [funkwhale/all-in-one:latest](https://hub.docker.com/r/funkwhale/all-in-one/tags)
-and currently does not support arm devices.
-If you are aware of a suitable substitution or replacement ([good place to start](https://hub.docker.com/search?q=funkwhale&type=image&architecture=arm%2Carm64)),
- [please see issue 478](https://github.com/Vivumlab/VivumLab/-/issues/478)
-and test your idea using the [documentation](https://vivumlab.com/development/adding_services/).
+![amd64](https://img.shields.io/badge/{% if not funkwhale.amd64 %}untested{% else %}{{ funkwhale.amd64 }}{% endif %}-amd64-{% if not funkwhale.amd64 %}inactive{% elif funkwhale.amd64 == "verified" %}success{% elif funkwhale.amd64 == "supported" %}informational{% elif funkwhale.amd64 == "unsupported" %}critical{% endif %}?style=flat)
+![arm64](https://img.shields.io/badge/{% if not funkwhale.arm64 %}untested{% else %}{{ funkwhale.arm64 }}{% endif %}-arm64-{% if not funkwhale.arm64 %}inactive{% elif funkwhale.arm64 == "verified" %}success{% elif funkwhale.arm64 == "supported" %}informational{% elif funkwhale.arm64 == "unsupported" %}critical{% endif %}?style=flat)
+![armv7](https://img.shields.io/badge/{% if not funkwhale.armv7 %}untested{% else %}{{ funkwhale.armv7 }}{% endif %}-armv7-{% if not funkwhale.armv7 %}inactive{% elif funkwhale.armv7 == "verified" %}success{% elif funkwhale.armv7 == "supported" %}informational{% elif funkwhale.armv7 == "unsupported" %}critical{% endif %}?style=flat)
 
-## Access
+## Information
 
-It is available at [https://{% if funkwhale.domain %}{{ funkwhale.domain }}{% else %}{{ funkwhale.subdomain + "." + domain }}{% endif %}/](https://{% if funkwhale.domain %}{{ funkwhale.domain }}{% else %}{{ funkwhale.subdomain + "." + domain }}{% endif %}/) or [http://{% if funkwhale.domain %}{{ funkwhale.domain }}{% else %}{{ funkwhale.subdomain + "." + domain }}{% endif %}/](http://{% if funkwhale.domain %}{{ funkwhale.domain }}{% else %}{{ funkwhale.subdomain + "." + domain }}{% endif %}/)
 
-{% if enable_tor %}
-It is also available via Tor at [http://{{ funkwhale.subdomain + "." + tor_domain }}/](http://{{ funkwhale.subdomain + "." + tor_domain }}/)
-{% endif %}
+**Docker Image:** !!! LINK TO DOCKER IMAGE/ DOCKER HUB !!! \
+**Current Image Version:** {{ funkwhale.version }}
+
+## SETUP
+
+### Enabling funkwhale
+
+#### Command:
+
+**`vlab set funkwhale.enable True`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+funkwhale
+  enable: True
+```
+
+#### Finalising changes:
+
+run: **`vlab update_one service=funkwhale`**
+
+## FIRST RUN
+
+!!! **DEVELOPERS**: make sure that you include any information that the user requires to get started, below. !!!
+
+!!! Below are some **examples** with headings, and with some **example** instructions !!!
+
+#### ADMINISTRATOR SETUP
 
 Once your funkwhale instance is running, you'll need to SSH into your server and run:
 
@@ -33,13 +59,149 @@ export LIBRARY_ID="<YOUR_LIBRARY_ID>"
 docker exec -it funkwhale_app_1 python /app/api/manage.py import_files $LIBRARY_ID "/data/music/" --recursive --noinput
 ```
 
-## Security enable/disable https_only and auth
+#### SMTP/ MAIL
 
-To enable https_only or auth set the service config to True
-`settings/config.yml`
+1. run **`vlab decrypt`** to decrypt the `vault.yml` file
 
+2. make some changes
+
+
+##### SMTP Settings
 ```
-funkwhale:
+smtp:
+  host:
+  port:
+  user:
+  pass:
+  from_email:
+  from_name:
+```
+
+3. run **`vlab update_one service=funkwhale`** to complete the changes
+
+
+## ACCESS
+
+funkwhale (HTTPS) link: [https://{% if funkwhale.domain %}{{ funkwhale.domain }}{% else %}{{ funkwhale.subdomain + "." + domain }}{% endif %}/](https://{% if funkwhale.domain %}{{ funkwhale.domain }}{% else %}{{ funkwhale.subdomain + "." + domain }}{% endif %}/)
+funkwhale (HTTP) link: [http://{% if funkwhale.domain %}{{ funkwhale.domain }}{% else %}{{ funkwhale.subdomain + "." + domain }}{% endif %}/](http://{% if funkwhale.domain %}{{ funkwhale.domain }}{% else %}{{ funkwhale.subdomain + "." + domain }}{% endif %}/)
+
+{% if enable_tor %}
+Tor link: [http://{{ funkwhale.subdomain + "." + tor_domain }}/](http://{{ funkwhale.subdomain + "." + tor_domain }}/)
+{% endif %}
+
+## OPTIONS
+
+### HTTPS_ONLY
+*Default: False*
+*Options: True/False*
+
+#### Command:
+
+**`vlab set funkwhale.https_only True`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+funkwhale
   https_only: True
+```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=funkwhale`**
+
+### AUTH
+*Default: False*
+*Options: True/False*
+
+#### Command:
+
+**`vlab set funkwhale.auth True`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+funkwhale
   auth: True
 ```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=funkwhale`**
+
+### DOMAIN
+*Default: False*
+*NOTE: include the sitename and top level domain suffix. eg. name.com, site.net*
+
+#### Command:
+
+**`vlab set funkwhale.domain funkwhale.com`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+funkwhale
+  domain: funkwhale.com
+```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=funkwhale`**
+
+### SUBDOMAIN
+*Default: funkwhale*
+*NOTE: Periods/ delimiters are not required. eg. 'media' will set the full URL as 'media.{{domain}}'*
+
+#### Command:
+
+**`vlab set funkwhale.subdomain media`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+funkwhale
+  subdomain: media
+```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=funkwhale`**
+
+### VERSION
+*Default: {{  funkwhale.version  }}*
+*NOTE: Ensure that the version exists*
+
+#### Command:
+
+**`vlab set funkwhale.version 2.7`**
+
+#### File alteration:
+
+set the appropriate service settings in `settings/config.yml` to true
+
+eg.
+```
+funkwhale
+  version: 2.7
+```
+
+##### Finalising changes:
+
+run: **`vlab update_one service=funkwhale`**
+
+## Need more help?
+Further information regarding services can be found. \
+General Information can be found in the [documentation](https://docs.vivumlab.com). \
+Additional assistance can be found on our [Contact Us](https://docs.vivumlab.com/Contact-us) page.
