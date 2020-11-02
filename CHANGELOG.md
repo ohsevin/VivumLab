@@ -1,3 +1,10 @@
+### [0.3.1](https://github.com/VivumLab/VivumLab/compare/v0.3.0...v0.3.1) (2020-11-02)
+
+
+### Bug Fixes
+
+* **docs:** linebreak fix ([#139](https://github.com/VivumLab/VivumLab/issues/139)) ([9b831c0](https://github.com/VivumLab/VivumLab/commit/9b831c0a9edc1a75df0638e1d70de8699f77c58d))
+
 ## [0.3.0](https://github.com/VivumLab/VivumLab/compare/v0.2.0...v0.3.0) (2020-10-22)
 
 
