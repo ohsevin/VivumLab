@@ -1,3 +1,15 @@
+## [0.4.0](https://github.com/VivumLab/VivumLab/compare/v0.3.1...v0.4.0) (2020-11-02)
+
+
+### Features
+
+* **dev:** allows choice to be a dev or a user ([#137](https://github.com/VivumLab/VivumLab/issues/137)) ([bcd5c38](https://github.com/VivumLab/VivumLab/commit/bcd5c38540b4ef09f96bab7432060fa4bd3fd06c))
+
+
+### Bug Fixes
+
+* **docs:** linebreak in docs fixed ([#140](https://github.com/VivumLab/VivumLab/issues/140)) ([6e82ed6](https://github.com/VivumLab/VivumLab/commit/6e82ed6d0e07dc436c6afe57d345cb20538879e2))
+
 ### [0.3.1](https://github.com/VivumLab/VivumLab/compare/v0.3.0...v0.3.1) (2020-11-02)
 
 
