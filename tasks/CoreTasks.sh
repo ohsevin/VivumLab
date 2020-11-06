@@ -4,8 +4,6 @@
 
 # Prints the Logo
 Task::logo_local() {
-    : @desc "Prints the Logo, makes local sanity checks"
-
   if [[ -v "already_ran[${FUNCNAME[0]}]" ]] ;  then return ; fi
   already_ran[${FUNCNAME[0]}]=1
   cat vivumlablogo.txt
@@ -19,8 +17,6 @@ Task::logo_local() {
 }
 
 Task::logo() {
-  : @desc "Prints the Logo, makes local and remote sanity checks"
-
   Task::logo_local
   Task::sanity_check_remote
 }
@@ -44,7 +40,6 @@ Task::show(){
 
 # Builds the docker image used for VivumLab Deployments
 Task::build() {
-    : @desc "Builds the Docker Image used to deploy"
     : @param force true "Forces a rebuild/repull of the docker image"
     : @param build true "Pulls the image"
     : @param cache true "Allows the build to use the cache"
@@ -179,7 +174,6 @@ Task::restore() {
 
 # CI - Updates the config file, and ensures the vault is encrypted.
 Task::ci(){
-  : @desc "Template the docs locally."
   : @param config_dir="settings_ci"
   : @param force true "Forces a rebuild/repull of the docker image"
   : @param build true "Forces to build the image locally"
@@ -243,8 +237,6 @@ Task::run_docker() {
 
 # Checks the current version
 Task::check_version() {
-  : @desc "Checks the current version"
-
   VERSION_CURRENT=$(cat VERSION)
   VERSION_LATEST=$(curl -s -m 2 https://raw.githubusercontent.com/Vivumlab/VivumLab/master/VERSION)
 
